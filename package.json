@@ -2,19 +2,18 @@
   "name": "react-autocomplete",
   "version": "0.0.2",
   "description": "",
-  "main": "lib/main.js",
+  "main": "dist/main.js",
   "scripts": {
+    "build": "babel lib --out-dir dist && cp lib/styles.css dist/styles.css",
     "test": "echo \"no tests yet, just trust me\" && exit 0"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "react": "^0.10.0"
+    "react": "^0.12.2"
   },
   "devDependencies": {
-    "jsx-loader": "^0.10.2",
-    "webpack": "^1.3.0-beta5",
-    "rf-release": "^0.1.2"
+    "babel": "^4.6.6"
   },
   "tags": [
     "react",
