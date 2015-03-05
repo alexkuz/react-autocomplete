@@ -2,6 +2,12 @@
 * React v12.2 (alternative: npm-shrinkwrap)
 * many configurations of webpack/browserify/etc. (alternative: configure your loader to transform the lib's JSX).
 
+> `npm install colinhicks/react-autocomplete`
+```js
+import {Combobox, Option} from 'react-autocomplete';
+```
+
+
 > Original readme preserved below ...
 
 react-autocomplete (combobox)
