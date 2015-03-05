@@ -1,3 +1,9 @@
+> A quick, friendly fork aimed at making the original lib easier to consume, when using with:
+* React v12.2 (alternative: npm-shrinkwrap)
+* many configurations of webpack/browserify/etc. (alternative: configure your loader to transform the lib's JSX).
+
+> Original readme preserved below ...
+
 react-autocomplete (combobox)
 =============================
 
