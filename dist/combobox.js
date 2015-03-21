@@ -1,9 +1,8 @@
 "use strict";
 
-var React = require("react");
+var React = require("react/addons");
 var guid = 0;
 var k = function k() {};
-var addClass = require("./add-class");
 var ComboboxOption = require("./option");
 
 module.exports = React.createClass({
@@ -97,36 +96,36 @@ module.exports = React.createClass({
     var activedescendant;
     var isEmpty = true;
     children = children || this.props.children;
-    React.Children.forEach(children, (function (child, index) {
-      if (child.type !== ComboboxOption.type)
-        // allow random elements to live in this list
-        return;
+    var clonedChildren = React.Children.map(children, (function (child, index) {
       isEmpty = false;
-      // TODO: cloneWithProps and map instead of altering the children in-place
-      var props = child.props;
-      if (this.state.value === props.value) {
+      var props = {};
+      if (this.state.value === child.props.value) {
         // need an ID for WAI-ARIA
-        props.id = props.id || "rf-combobox-selected-" + ++guid;
+        props.id = child.props.id || "rf-combobox-selected-" + ++guid;
         props.isSelected = true;
-        activedescendant = props.id;
+        props.className = child.props.className + " rf-combobox-selected";
+        activedescendant = child.props.id;
       }
       props.onBlur = this.handleOptionBlur;
       props.onClick = this.selectOption.bind(this, child);
       props.onFocus = this.handleOptionFocus;
       props.onKeyDown = this.handleOptionKeyDown.bind(this, child);
       props.onMouseEnter = this.handleOptionMouseEnter.bind(this, index);
+      return React.addons.cloneWithProps(child, props);
     }).bind(this));
     return {
-      children: children,
+      children: clonedChildren,
       activedescendant: activedescendant,
       isEmpty: isEmpty
     };
   },
 
   getClassName: function getClassName() {
-    var className = addClass(this.props.className, "rf-combobox");
-    if (this.state.isOpen) className = addClass(className, "rf-combobox-is-open");
-    return className;
+    var classNames = [this.props.className, "rf-combobox"];
+    if (this.state.isOpen) {
+      classNames.push("rf-combobox-is-open");
+    }
+    return classNames.join(" ");
   },
 
   /**
