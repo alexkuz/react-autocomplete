@@ -1,7 +1,6 @@
 "use strict";
 
 var React = require("react");
-var addClass = require("./add-class");
 
 module.exports = React.createClass({
   displayName: "exports",
@@ -31,9 +30,7 @@ module.exports = React.createClass({
   },
 
   render: function render() {
-    var props = this.props;
-    if (props.isSelected) props.className = addClass(props.className, "rf-combobox-selected");
-    return React.DOM.div(props);
+    return React.DOM.div(this.props);
   }
 
 });
