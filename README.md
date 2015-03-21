@@ -1,5 +1,5 @@
 > A quick, friendly fork aimed at making the original lib easier to consume, when using with:
-* React v12.2 (alternative: npm-shrinkwrap)
+* React v0.12.x or v0.13.x
 * many configurations of webpack/browserify/etc. (alternative: configure your loader to transform the lib's JSX).
 
 > `npm install colinhicks/react-autocomplete`
