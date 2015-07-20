@@ -6,6 +6,11 @@ This fork enables bootstrap appearance, like this:
 Also, it has a mode, in which it shrinks to it's content. Can be useful as inline component:
 ```
 <Compobox shrink={true} shrinkMinSize={100}  ... />
+```
+Installation: 
+```
+$ npm install @alexkuz/react-autocomplete
+```
 
 #
 
