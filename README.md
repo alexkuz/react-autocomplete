@@ -1,3 +1,14 @@
+> Yes, this is another fork. Of the fork. I'm sorry.
+This fork enables bootstrap appearance, like this:
+```
+<Compobox appearance='bootstrap' ... />
+```
+Also, it has a mode, in which it shrinks to it's content. Can be useful as inline component:
+```
+<Compobox shrink={true} shrinkMinSize={100}  ... />
+
+#
+
 > A quick, friendly fork aimed at making the original lib easier to consume, when using with:
 * React v0.12.x or v0.13.x
 * many configurations of webpack/browserify/etc. (alternative: configure your loader to transform the lib's JSX).
