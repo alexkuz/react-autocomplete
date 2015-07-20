@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
 module.exports = {
-  Combobox: require("./combobox"),
-  Option: require("./option")
+  Combobox: require('./combobox'),
+  Option: require('./option')
 };

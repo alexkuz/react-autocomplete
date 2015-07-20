@@ -9,7 +9,7 @@
   },
   "author": "",
   "license": "MIT",
-  "dependencies": {
+  "peerDependencies": {
     "react": "^0.13.1"
   },
   "devDependencies": {

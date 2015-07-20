@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-var React = require("react");
+var React = require('react');
 
 module.exports = React.createClass({
-  displayName: "exports",
+  displayName: 'exports',
 
   propTypes: {
 
@@ -22,15 +22,14 @@ module.exports = React.createClass({
 
   getDefaultProps: function getDefaultProps() {
     return {
-      role: "option",
-      tabIndex: "-1",
-      className: "rf-combobox-option",
+      role: 'option',
+      tabIndex: '-1',
       isSelected: false
     };
   },
 
   render: function render() {
-    return React.DOM.div(this.props);
+    return React.createElement('li', this.props);
   }
 
 });

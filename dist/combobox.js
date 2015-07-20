@@ -1,12 +1,12 @@
-"use strict";
+'use strict';
 
-var React = require("react/addons");
+var React = require('react');
 var guid = 0;
 var k = function k() {};
-var ComboboxOption = require("./option");
+var ComboboxOption = require('./option');
 
 module.exports = React.createClass({
-  displayName: "exports",
+  displayName: 'exports',
 
   propTypes: {
 
@@ -16,7 +16,7 @@ module.exports = React.createClass({
      * course, both does both (do you have a soft 'L' in there when you say
      * "both" out loud?)
     */
-    autocomplete: React.PropTypes.oneOf(["both", "inline", "list"]),
+    autocomplete: React.PropTypes.oneOf(['both', 'inline', 'list']),
 
     /**
      * Called when the combobox receives user input, this is your chance to
@@ -45,16 +45,53 @@ module.exports = React.createClass({
     /**
      * The initial value of the component.
     */
-    value: React.PropTypes.any
+    value: React.PropTypes.any,
+
+    appearance: React.PropTypes.oneOf(['rf', 'bootstrap']),
+
+    shrink: React.PropTypes.bool,
+
+    shrinkMinSize: React.PropTypes.number
   },
 
   getDefaultProps: function getDefaultProps() {
     return {
-      autocomplete: "both",
+      autocomplete: 'both',
       onInput: k,
       onSelect: k,
-      value: null
+      value: null,
+      appearance: 'rf',
+      shrink: false,
+      shrinkMinSize: 100
     };
+  },
+
+  getAppearance: function getAppearance() {
+    var appearances = {
+      rf: {
+        combobox: 'rf-combobox',
+        open: 'rf-combobox-is-open',
+        selected: 'rf-combobox-selected',
+        input: 'rf-combobox-input',
+        button: 'rf-combobox-button',
+        caret: '',
+        list: 'rf-combobox-list',
+        option: 'rf-combobox-option'
+      },
+
+      bootstrap: {
+        combobox: 'input-group',
+        open: 'open',
+        selected: 'active',
+        input: 'form-control',
+        button: 'input-group-btn',
+        caret: 'caret',
+        list: 'dropdown-menu',
+        option: 'dropdown-option'
+      }
+    };
+
+    return appearances[this.props.appearance];
   },
 
   getInitialState: function getInitialState() {
@@ -68,12 +105,13 @@ module.exports = React.createClass({
       // this prevents crazy jumpiness since we focus options on mouseenter
       usingKeyboard: false,
       activedescendant: null,
-      listId: "rf-combobox-list-" + ++guid,
+      listId: 'rf-combobox-list-' + ++guid,
       menu: {
         children: [],
         activedescendant: null,
         isEmpty: true
-      }
+      },
+      shrinkWidth: this.props.shrinkMinSize || 100
     };
   },
 
@@ -87,6 +125,12 @@ module.exports = React.createClass({
     });
   },
 
+  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
+    if (prevState.inputValue !== this.state.inputValue || prevState.matchedAutocompleteOption !== this.state.matchedAutocompleteOption) {
+      this.updateWidth();
+    }
+  },
+
   /**
    * We don't create the <ComboboxOption> components, the user supplies them,
    * so before rendering we attach handlers to facilitate communication from
@@ -96,14 +140,15 @@ module.exports = React.createClass({
     var activedescendant;
     var isEmpty = true;
     children = children || this.props.children;
+    var appearance = this.getAppearance();
     var clonedChildren = React.Children.map(children, (function (child, index) {
       isEmpty = false;
       var props = {};
       if (this.state.value === child.props.value) {
         // need an ID for WAI-ARIA
-        props.id = child.props.id || "rf-combobox-selected-" + ++guid;
+        props.id = child.props.id || 'rf-combobox-selected-' + ++guid;
         props.isSelected = true;
-        props.className = child.props.className + " rf-combobox-selected";
+        props.className = [appearance.option, appearance.selected].join(' ');
         activedescendant = child.props.id;
       }
       props.onBlur = this.handleOptionBlur;
@@ -111,7 +156,7 @@ module.exports = React.createClass({
       props.onFocus = this.handleOptionFocus;
       props.onKeyDown = this.handleOptionKeyDown.bind(this, child);
       props.onMouseEnter = this.handleOptionMouseEnter.bind(this, index);
-      return React.addons.cloneWithProps(child, props);
+      return React.cloneElement(child, props);
     }).bind(this));
     return {
       children: clonedChildren,
@@ -121,11 +166,12 @@ module.exports = React.createClass({
   },
 
   getClassName: function getClassName() {
-    var classNames = [this.props.className, "rf-combobox"];
+    var appearance = this.getAppearance();
+    var classNames = [this.props.className, appearance.combobox];
     if (this.state.isOpen) {
-      classNames.push("rf-combobox-is-open");
+      classNames.push(appearance.open);
     }
-    return classNames.join(" ");
+    return classNames.join(' ');
   },
 
   /**
@@ -143,7 +189,7 @@ module.exports = React.createClass({
   },
 
   handleInputChange: function handleInputChange(event) {
-    var value = this.refs.input.getDOMNode().value;
+    var value = React.findDOMNode(this.refs.input).value;
     this.clearSelectedState((function () {
       this.props.onInput(value);
       if (!this.state.isOpen) this.showList();
@@ -152,9 +198,8 @@ module.exports = React.createClass({
 
   handleInputBlur: function handleInputBlur() {
     var focusedAnOption = this.state.focusedIndex != null;
-    if (focusedAnOption) {
-      return;
-    }this.maybeSelectAutocompletedOption();
+    if (focusedAnOption) return;
+    this.maybeSelectAutocompletedOption();
     this.hideList();
   },
 
@@ -171,9 +216,8 @@ module.exports = React.createClass({
   handleInputKeyUp: function handleInputKeyUp(event) {
     if (this.state.menu.isEmpty ||
     // autocompleting while backspacing feels super weird, so let's not
-    event.keyCode === 8 /*backspace*/ || !this.props.autocomplete.match(/both|inline/)) {
-      return;
-    }this.autocompleteInputValue();
+    event.keyCode === 8 /*backspace*/ || !this.props.autocomplete.match(/both|inline/)) return;
+    this.autocompleteInputValue();
   },
 
   /**
@@ -182,16 +226,15 @@ module.exports = React.createClass({
    * been added, allowing the user to keep typing naturally.
   */
   autocompleteInputValue: function autocompleteInputValue() {
-    if (this.props.autocomplete == false || this.props.children.length === 0) {
-      return;
-    }var input = this.refs.input.getDOMNode();
+    if (this.props.autocomplete == false || this.props.children.length === 0) return;
+    var input = React.findDOMNode(this.refs.input);
     var inputValue = input.value;
     var firstChild = this.props.children.length ? this.props.children[0] : this.props.children;
     var label = getLabel(firstChild);
     var fragment = matchFragment(inputValue, label);
-    if (!fragment) {
-      return;
-    }input.value = label;
+    console.log('match:', fragment);
+    if (!fragment) return;
+    input.value = label;
     input.setSelectionRange(inputValue.length, label.length);
     this.setState({ matchedAutocompleteOption: firstChild });
   },
@@ -215,32 +258,31 @@ module.exports = React.createClass({
   },
 
   focusInput: function focusInput() {
-    this.refs.input.getDOMNode().focus();
+    React.findDOMNode(this.refs.input).focus();
   },
 
   selectInput: function selectInput() {
-    this.refs.input.getDOMNode().select();
+    React.findDOMNode(this.refs.input).select();
   },
 
   inputKeydownMap: {
-    38: "focusPrevious",
-    40: "focusNext",
-    27: "hideOnEscape",
-    13: "selectOnEnter"
+    38: 'focusPrevious',
+    40: 'focusNext',
+    27: 'hideOnEscape',
+    13: 'selectOnEnter'
   },
 
   optionKeydownMap: {
-    38: "focusPrevious",
-    40: "focusNext",
-    13: "selectOption",
-    27: "hideOnEscape"
+    38: 'focusPrevious',
+    40: 'focusNext',
+    13: 'selectOption',
+    27: 'hideOnEscape'
   },
 
   handleKeydown: function handleKeydown(event) {
     var handlerName = this.inputKeydownMap[event.keyCode];
-    if (!handlerName) {
-      return;
-    }event.preventDefault();
+    if (!handlerName) return;
+    event.preventDefault();
     this.setState({ usingKeyboard: true });
     this[handlerName].call(this);
   },
@@ -264,13 +306,12 @@ module.exports = React.createClass({
 
   selectOnEnter: function selectOnEnter() {
     this.maybeSelectAutocompletedOption();
-    this.refs.input.getDOMNode().select();
+    React.findDOMNode(this.refs.input).select();
   },
 
   maybeSelectAutocompletedOption: function maybeSelectAutocompletedOption() {
-    if (!this.state.matchedAutocompleteOption) {
-      return;
-    }this.selectOption(this.state.matchedAutocompleteOption, { focus: false });
+    if (!this.state.matchedAutocompleteOption) return;
+    this.selectOption(this.state.matchedAutocompleteOption, { focus: false });
   },
 
   selectOption: function selectOption(child, options) {
@@ -287,16 +328,14 @@ module.exports = React.createClass({
   },
 
   focusNext: function focusNext() {
-    if (this.state.menu.isEmpty) {
-      return;
-    }var index = this.state.focusedIndex == null ? 0 : this.state.focusedIndex + 1;
+    if (this.state.menu.isEmpty) return;
+    var index = this.state.focusedIndex == null ? 0 : this.state.focusedIndex + 1;
     this.focusOptionAtIndex(index);
   },
 
   focusPrevious: function focusPrevious() {
-    if (this.state.menu.isEmpty) {
-      return;
-    }var last = this.props.children.length - 1;
+    if (this.state.menu.isEmpty) return;
+    var last = this.props.children.length - 1;
     var index = this.state.focusedIndex == null ? last : this.state.focusedIndex - 1;
     this.focusOptionAtIndex(index);
   },
@@ -323,9 +362,8 @@ module.exports = React.createClass({
   },
 
   focusOptionAtIndex: function focusOptionAtIndex(index) {
-    if (!this.state.isOpen && this.state.value) {
-      return this.focusSelectedOption();
-    }this.showList();
+    if (!this.state.isOpen && this.state.value) return this.focusSelectedOption();
+    this.showList();
     var length = this.props.children.length;
     if (index === -1) index = length - 1;else if (index === length) index = 0;
     this.setState({
@@ -335,48 +373,72 @@ module.exports = React.createClass({
 
   focusOption: function focusOption() {
     var index = this.state.focusedIndex;
-    this.refs.list.getDOMNode().childNodes[index].focus();
+    React.findDOMNode(this.refs.list).childNodes[index].focus();
   },
 
   render: function render() {
+    var appearance = this.getAppearance();
+    var wrapperStyle = this.props.shrink ? { width: this.state.shrinkWidth + 'px' } : {};
+
     return React.createElement(
-      "div",
-      { className: this.getClassName() },
-      React.createElement("input", {
-        ref: "input",
-        className: "rf-combobox-input",
+      'div',
+      { className: this.getClassName(),
+        style: wrapperStyle },
+      this.props.shrink && React.createElement('span', { ref: 'sizer', style: {
+          position: 'absolute',
+          visibility: 'hidden',
+          'white-space': 'nowrap',
+          'font-size': '16px'
+        } }),
+      React.createElement('input', {
+        ref: 'input',
+        className: appearance.input,
         defaultValue: this.props.value,
         value: this.state.inputValue,
         onChange: this.handleInputChange,
         onBlur: this.handleInputBlur,
         onKeyDown: this.handleKeydown,
         onKeyUp: this.handleInputKeyUp,
-        role: "combobox",
-        "aria-activedescendant": this.state.menu.activedescendant,
-        "aria-autocomplete": this.props.autocomplete,
-        "aria-owns": this.state.listId
+        role: 'combobox',
+        'aria-activedescendant': this.state.menu.activedescendant,
+        'aria-autocomplete': this.props.autocomplete,
+        'aria-owns': this.state.listId
       }),
       React.createElement(
-        "span",
-        {
-          "aria-hidden": "true",
-          className: "rf-combobox-button",
-          onClick: this.handleButtonClick
-        },
-        "▾"
+        'div',
+        { 'aria-hidden': 'true',
+          className: appearance.button,
+          ref: 'button' },
+        React.createElement('span', { className: appearance.caret,
+          onClick: this.handleButtonClick })
       ),
       React.createElement(
-        "div",
+        'ul',
         {
           id: this.state.listId,
-          ref: "list",
-          className: "rf-combobox-list",
-          "aria-expanded": this.state.isOpen + "",
-          role: "listbox"
+          ref: 'list',
+          className: appearance.list,
+          'aria-expanded': this.state.isOpen + '',
+          role: 'listbox'
         },
         this.state.menu.children
       )
     );
+  },
+
+  updateWidth: function updateWidth() {
+    if (!this.props.shrink) {
+      return;
+    }
+
+    var sizer = React.findDOMNode(this.refs.sizer);
+    var input = React.findDOMNode(this.refs.input);
+    var button = React.findDOMNode(this.refs.button);
+
+    sizer.innerText = input.value;
+    this.setState({
+      shrinkWidth: Math.max(sizer.offsetWidth + button.offsetWidth, this.props.shrinkMinSize)
+    });
   }
 });
 
@@ -388,9 +450,7 @@ function getLabel(component) {
 function matchFragment(userInput, firstChildLabel) {
   userInput = userInput.toLowerCase();
   firstChildLabel = firstChildLabel.toLowerCase();
-  if (userInput === "" || userInput === firstChildLabel) {
-    return false;
-  }if (firstChildLabel.toLowerCase().indexOf(userInput.toLowerCase()) === -1) {
-    return false;
-  }return true;
+  if (userInput === '' || userInput === firstChildLabel) return false;
+  if (firstChildLabel.toLowerCase().indexOf(userInput.toLowerCase()) === -1) return false;
+  return true;
 }
