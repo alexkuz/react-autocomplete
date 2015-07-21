@@ -1,9 +1,7 @@
-'use strict';
-
 var React = require('react');
 
 module.exports = React.createClass({
-  displayName: 'exports',
+  displayName: 'Option',
 
   propTypes: {
 
@@ -20,7 +18,7 @@ module.exports = React.createClass({
     label: React.PropTypes.string
   },
 
-  getDefaultProps: function getDefaultProps() {
+  getDefaultProps: function() {
     return {
       role: 'option',
       tabIndex: '-1',
@@ -28,7 +26,7 @@ module.exports = React.createClass({
     };
   },
 
-  render: function render() {
+  render: function() {
     return React.createElement('li', this.props);
   }
 

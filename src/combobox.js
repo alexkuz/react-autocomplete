@@ -1,12 +1,10 @@
-'use strict';
-
 var React = require('react');
 var guid = 0;
-var k = function k() {};
+var k = function(){};
 var ComboboxOption = require('./option');
 
 module.exports = React.createClass({
-  displayName: 'exports',
+  displayName: 'Combobox',
 
   propTypes: {
 
@@ -47,14 +45,14 @@ module.exports = React.createClass({
     */
     value: React.PropTypes.any,
 
-    appearance: React.PropTypes.oneOf(['rf', 'bootstrap']),
+    appearance: React.PropTypes.oneOf(['rf', 'bootstrap', 'bootstrap-small', 'bootstrap-large']),
 
     shrink: React.PropTypes.bool,
 
     shrinkMinSize: React.PropTypes.number
   },
 
-  getDefaultProps: function getDefaultProps() {
+  getDefaultProps: function() {
     return {
       autocomplete: 'both',
       onInput: k,
@@ -66,7 +64,8 @@ module.exports = React.createClass({
     };
   },
 
-  getAppearance: function getAppearance() {
+
+  getAppearance() {
     var appearances = {
       rf: {
         combobox: 'rf-combobox',
@@ -91,10 +90,22 @@ module.exports = React.createClass({
       }
     };
 
+    appearances['bootstrap-small'] = Object.assign(
+      {},
+      appearances.bootstrap,
+      { input: 'form-control input-sm' }
+    );
+
+    appearances['bootstrap-large'] = Object.assign(
+      {},
+      appearances.bootstrap,
+      { input: 'form-control input-lg' }
+    );
+
     return appearances[this.props.appearance];
   },
 
-  getInitialState: function getInitialState() {
+  getInitialState: function() {
     return {
       value: this.props.value,
       // the value displayed in the input
@@ -105,7 +116,7 @@ module.exports = React.createClass({
       // this prevents crazy jumpiness since we focus options on mouseenter
       usingKeyboard: false,
       activedescendant: null,
-      listId: 'rf-combobox-list-' + ++guid,
+      listId: 'rf-combobox-list-'+(++guid),
       menu: {
         children: [],
         activedescendant: null,
@@ -115,18 +126,23 @@ module.exports = React.createClass({
     };
   },
 
-  componentWillMount: function componentWillMount() {
-    this.setState({ menu: this.makeMenu() });
+  componentWillMount: function() {
+    this.setState({menu: this.makeMenu()});
   },
 
-  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
+  componentDidMount: function() {
+    this.updateWidth();
+  },
+
+  componentWillReceiveProps: function(newProps) {
     this.setState({
       menu: this.makeMenu(newProps.children)
     });
   },
 
-  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
-    if (prevState.inputValue !== this.state.inputValue || prevState.matchedAutocompleteOption !== this.state.matchedAutocompleteOption) {
+  componentDidUpdate: function(prevProps, prevState) {
+    if (prevState.inputValue !== this.state.inputValue ||
+        prevState.matchedAutocompleteOption !== this.state.matchedAutocompleteOption) {
       this.updateWidth();
     }
   },
@@ -136,17 +152,17 @@ module.exports = React.createClass({
    * so before rendering we attach handlers to facilitate communication from
    * the ComboboxOption to the Combobox.
   */
-  makeMenu: function makeMenu(children) {
+  makeMenu: function(children) {
     var activedescendant;
     var isEmpty = true;
     children = children || this.props.children;
     var appearance = this.getAppearance();
-    var clonedChildren = React.Children.map(children, (function (child, index) {
+    var clonedChildren = React.Children.map(children, function(child, index) {
       isEmpty = false;
       var props = {};
       if (this.state.value === child.props.value) {
         // need an ID for WAI-ARIA
-        props.id = child.props.id || 'rf-combobox-selected-' + ++guid;
+        props.id = child.props.id || 'rf-combobox-selected-'+(++guid);
         props.isSelected = true;
         props.className = [appearance.option, appearance.selected].join(' ');
         activedescendant = child.props.id;
@@ -157,7 +173,7 @@ module.exports = React.createClass({
       props.onKeyDown = this.handleOptionKeyDown.bind(this, child);
       props.onMouseEnter = this.handleOptionMouseEnter.bind(this, index);
       return React.cloneElement(child, props);
-    }).bind(this));
+    }.bind(this));
     return {
       children: clonedChildren,
       activedescendant: activedescendant,
@@ -165,7 +181,7 @@ module.exports = React.createClass({
     };
   },
 
-  getClassName: function getClassName() {
+  getClassName: function() {
     var appearance = this.getAppearance();
     var classNames = [this.props.className, appearance.combobox];
     if (this.state.isOpen) {
@@ -178,7 +194,7 @@ module.exports = React.createClass({
    * When the user begins typing again we need to clear out any state that has
    * to do with an existing or potential selection.
   */
-  clearSelectedState: function clearSelectedState(cb) {
+  clearSelectedState: function(cb) {
     this.setState({
       focusedIndex: null,
       inputValue: null,
@@ -188,35 +204,40 @@ module.exports = React.createClass({
     }, cb);
   },
 
-  handleInputChange: function handleInputChange(event) {
+  handleInputChange: function(event) {
     var value = React.findDOMNode(this.refs.input).value;
-    this.clearSelectedState((function () {
+    this.clearSelectedState(function() {
       this.props.onInput(value);
-      if (!this.state.isOpen) this.showList();
-    }).bind(this));
+      if (!this.state.isOpen)
+        this.showList();
+    }.bind(this));
   },
 
-  handleInputBlur: function handleInputBlur() {
+  handleInputBlur: function() {
     var focusedAnOption = this.state.focusedIndex != null;
-    if (focusedAnOption) return;
+    if (focusedAnOption)
+      return;
     this.maybeSelectAutocompletedOption();
     this.hideList();
   },
 
-  handleOptionBlur: function handleOptionBlur() {
+  handleOptionBlur: function() {
     // don't want to hide the list if we focused another option
     this.blurTimer = setTimeout(this.hideList, 0);
   },
 
-  handleOptionFocus: function handleOptionFocus() {
+  handleOptionFocus: function() {
     // see `handleOptionBlur`
     clearTimeout(this.blurTimer);
   },
 
-  handleInputKeyUp: function handleInputKeyUp(event) {
-    if (this.state.menu.isEmpty ||
-    // autocompleting while backspacing feels super weird, so let's not
-    event.keyCode === 8 /*backspace*/ || !this.props.autocomplete.match(/both|inline/)) return;
+  handleInputKeyUp: function(event) {
+    if (
+      this.state.menu.isEmpty ||
+      // autocompleting while backspacing feels super weird, so let's not
+      event.keyCode === 8 /*backspace*/ ||
+      !this.props.autocomplete.match(/both|inline/)
+    ) return;
     this.autocompleteInputValue();
   },
 
@@ -225,43 +246,49 @@ module.exports = React.createClass({
    * ComboboxOption in the list and selects only the fragment that has
    * been added, allowing the user to keep typing naturally.
   */
-  autocompleteInputValue: function autocompleteInputValue() {
-    if (this.props.autocomplete == false || this.props.children.length === 0) return;
+  autocompleteInputValue: function() {
+    if (
+      this.props.autocomplete == false ||
+      this.props.children.length === 0
+    ) return;
     var input = React.findDOMNode(this.refs.input);
     var inputValue = input.value;
-    var firstChild = this.props.children.length ? this.props.children[0] : this.props.children;
+    var firstChild = this.props.children.length ?
+      this.props.children[0] :
+      this.props.children;
     var label = getLabel(firstChild);
     var fragment = matchFragment(inputValue, label);
-    console.log('match:', fragment);
-    if (!fragment) return;
+    if (!fragment)
+      return;
     input.value = label;
     input.setSelectionRange(inputValue.length, label.length);
-    this.setState({ matchedAutocompleteOption: firstChild });
+    this.setState({matchedAutocompleteOption: firstChild});
   },
 
-  handleButtonClick: function handleButtonClick() {
+  handleButtonClick: function() {
     this.state.isOpen ? this.hideList() : this.showList();
     this.focusInput();
   },
 
-  showList: function showList() {
-    if (this.props.autocomplete.match(/both|list/)) this.setState({ isOpen: true });
+  showList: function() {
+    if (this.props.autocomplete.match(/both|list/))
+      this.setState({isOpen: true});
   },
 
-  hideList: function hideList() {
-    this.setState({ isOpen: false });
+  hideList: function() {
+    this.setState({isOpen: false});
   },
 
-  hideOnEscape: function hideOnEscape() {
+  hideOnEscape: function() {
     this.hideList();
     this.focusInput();
   },
 
-  focusInput: function focusInput() {
+  focusInput: function() {
     React.findDOMNode(this.refs.input).focus();
   },
 
-  selectInput: function selectInput() {
+  selectInput: function() {
     React.findDOMNode(this.refs.input).select();
   },
 
@@ -279,15 +306,16 @@ module.exports = React.createClass({
     27: 'hideOnEscape'
   },
 
-  handleKeydown: function handleKeydown(event) {
+  handleKeydown: function(event) {
     var handlerName = this.inputKeydownMap[event.keyCode];
-    if (!handlerName) return;
+    if (!handlerName)
+      return
     event.preventDefault();
-    this.setState({ usingKeyboard: true });
+    this.setState({usingKeyboard: true});
     this[handlerName].call(this);
   },
 
-  handleOptionKeyDown: function handleOptionKeyDown(child, event) {
+  handleOptionKeyDown: function(child, event) {
     var handlerName = this.optionKeydownMap[event.keyCode];
     if (!handlerName) {
       // if the user starts typing again while focused on an option, move focus
@@ -296,137 +324,148 @@ module.exports = React.createClass({
       return;
     }
     event.preventDefault();
-    this.setState({ usingKeyboard: true });
+    this.setState({usingKeyboard: true});
     this[handlerName].call(this, child);
   },
 
-  handleOptionMouseEnter: function handleOptionMouseEnter(index) {
-    if (this.state.usingKeyboard) this.setState({ usingKeyboard: false });else this.focusOptionAtIndex(index);
+  handleOptionMouseEnter: function(index) {
+    if (this.state.usingKeyboard)
+      this.setState({usingKeyboard: false});
+    else
+      this.focusOptionAtIndex(index);
   },
 
-  selectOnEnter: function selectOnEnter() {
+  selectOnEnter: function() {
     this.maybeSelectAutocompletedOption();
     React.findDOMNode(this.refs.input).select();
   },
 
-  maybeSelectAutocompletedOption: function maybeSelectAutocompletedOption() {
-    if (!this.state.matchedAutocompleteOption) return;
-    this.selectOption(this.state.matchedAutocompleteOption, { focus: false });
+  maybeSelectAutocompletedOption: function() {
+    if (!this.state.matchedAutocompleteOption)
+      return;
+    this.selectOption(this.state.matchedAutocompleteOption, {focus: false});
   },
 
-  selectOption: function selectOption(child, options) {
+  selectOption: function(child, options) {
     options = options || {};
     this.setState({
       value: child.props.value,
       inputValue: getLabel(child),
       matchedAutocompleteOption: null
-    }, (function () {
+    }, function() {
       this.props.onSelect(child.props.value, child);
       this.hideList();
-      if (options.focus !== false) this.selectInput();
-    }).bind(this));
+      if (options.focus !== false)
+        this.selectInput();
+    }.bind(this));
   },
 
-  focusNext: function focusNext() {
+  focusNext: function() {
     if (this.state.menu.isEmpty) return;
-    var index = this.state.focusedIndex == null ? 0 : this.state.focusedIndex + 1;
+    var index = this.state.focusedIndex == null ?
+      0 : this.state.focusedIndex + 1;
     this.focusOptionAtIndex(index);
   },
 
-  focusPrevious: function focusPrevious() {
+  focusPrevious: function() {
     if (this.state.menu.isEmpty) return;
     var last = this.props.children.length - 1;
-    var index = this.state.focusedIndex == null ? last : this.state.focusedIndex - 1;
+    var index = this.state.focusedIndex == null ?
+      last : this.state.focusedIndex - 1;
     this.focusOptionAtIndex(index);
   },
 
-  focusSelectedOption: function focusSelectedOption() {
+  focusSelectedOption: function() {
     var selectedIndex;
-    React.Children.forEach(this.props.children, (function (child, index) {
-      if (child.props.value === this.state.value) selectedIndex = index;
-    }).bind(this));
+    React.Children.forEach(this.props.children, function(child, index) {
+      if (child.props.value === this.state.value)
+        selectedIndex = index;
+    }.bind(this));
     this.showList();
     this.setState({
       focusedIndex: selectedIndex
     }, this.focusOption);
   },
 
-  findInputValue: function findInputValue(value) {
+  findInputValue: function(value) {
     value = value || this.props.value;
     // TODO: might not need this, we should know this in `makeMenu`
     var inputValue;
-    React.Children.forEach(this.props.children, function (child) {
-      if (child.props.value === value) inputValue = getLabel(child);
+    React.Children.forEach(this.props.children, function(child) {
+      if (child.props.value === value)
+        inputValue = getLabel(child);
     });
     return inputValue || value;
   },
 
-  focusOptionAtIndex: function focusOptionAtIndex(index) {
-    if (!this.state.isOpen && this.state.value) return this.focusSelectedOption();
+  focusOptionAtIndex: function(index) {
+    if (!this.state.isOpen && this.state.value)
+      return this.focusSelectedOption();
     this.showList();
     var length = this.props.children.length;
-    if (index === -1) index = length - 1;else if (index === length) index = 0;
+    if (index === -1)
+      index = length - 1;
+    else if (index === length)
+      index = 0;
     this.setState({
       focusedIndex: index
     }, this.focusOption);
   },
 
-  focusOption: function focusOption() {
+  focusOption: function() {
     var index = this.state.focusedIndex;
     React.findDOMNode(this.refs.list).childNodes[index].focus();
   },
 
-  render: function render() {
+  render: function() {
     var appearance = this.getAppearance();
-    var wrapperStyle = this.props.shrink ? { width: this.state.shrinkWidth + 'px' } : {};
+    var wrapperStyle = this.props.shrink ?
+      { width: this.state.shrinkWidth + 'px' } :
+      { };
 
-    return React.createElement(
-      'div',
-      { className: this.getClassName(),
-        style: wrapperStyle },
-      this.props.shrink && React.createElement('span', { ref: 'sizer', style: {
-          position: 'absolute',
-          visibility: 'hidden',
-          'white-space': 'nowrap',
-          'font-size': '16px'
-        } }),
-      React.createElement('input', {
-        ref: 'input',
-        className: appearance.input,
-        defaultValue: this.props.value,
-        value: this.state.inputValue,
-        onChange: this.handleInputChange,
-        onBlur: this.handleInputBlur,
-        onKeyDown: this.handleKeydown,
-        onKeyUp: this.handleInputKeyUp,
-        role: 'combobox',
-        'aria-activedescendant': this.state.menu.activedescendant,
-        'aria-autocomplete': this.props.autocomplete,
-        'aria-owns': this.state.listId
-      }),
-      React.createElement(
-        'div',
-        { 'aria-hidden': 'true',
-          className: appearance.button,
-          ref: 'button' },
-        React.createElement('span', { className: appearance.caret,
-          onClick: this.handleButtonClick })
-      ),
-      React.createElement(
-        'ul',
-        {
-          id: this.state.listId,
-          ref: 'list',
-          className: appearance.list,
-          'aria-expanded': this.state.isOpen + '',
-          role: 'listbox'
-        },
-        this.state.menu.children
-      )
+    return (
+      <div className={this.getClassName()}
+           style={wrapperStyle}>
+        {this.props.shrink &&
+          <span ref='sizer' style={{
+            position: 'absolute',
+            visibility: 'hidden',
+            'white-space': 'nowrap',
+            'font-size': '16px'
+          }} />
+        }
+        <input
+          ref="input"
+          className={appearance.input}
+          defaultValue={this.props.value}
+          value={this.state.inputValue}
+          onChange={this.handleInputChange}
+          onBlur={this.handleInputBlur}
+          onKeyDown={this.handleKeydown}
+          onKeyUp={this.handleInputKeyUp}
+          role="combobox"
+          aria-activedescendant={this.state.menu.activedescendant}
+          aria-autocomplete={this.props.autocomplete}
+          aria-owns={this.state.listId}
+        />
+        <div aria-hidden="true"
+             className={appearance.button}
+             ref="button">
+          <span className={appearance.caret}
+                onClick={this.handleButtonClick} />
+        </div>
+        <ul
+          id={this.state.listId}
+          ref="list"
+          className={appearance.list}
+          aria-expanded={this.state.isOpen+''}
+          role="listbox"
+        >{this.state.menu.children}</ul>
+      </div>
     );
   },
 
-  updateWidth: function updateWidth() {
+  updateWidth: function() {
     if (!this.props.shrink) {
       return;
     }
@@ -450,7 +489,8 @@ function getLabel(component) {
 function matchFragment(userInput, firstChildLabel) {
   userInput = userInput.toLowerCase();
   firstChildLabel = firstChildLabel.toLowerCase();
-  if (userInput === '' || userInput === firstChildLabel) return false;
-  if (firstChildLabel.toLowerCase().indexOf(userInput.toLowerCase()) === -1) return false;
-  return true;
+  if (userInput === '' || userInput === firstChildLabel)
+    return false;
+
+  return (firstChildLabel.toLowerCase().indexOf(userInput.toLowerCase()) === 0);
 }

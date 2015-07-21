@@ -2,10 +2,11 @@
   "name": "@alexkuz/react-autocomplete",
   "version": "0.0.2",
   "description": "",
-  "main": "dist/main.js",
+  "main": "lib/main.js",
   "scripts": {
-    "build": "babel lib --out-dir dist && cp lib/styles.css dist/styles.css",
-    "test": "echo \"no tests yet, just trust me\" && exit 0"
+    "build": "babel src --out-dir lib && cp src/styles.css lib/styles.css",
+    "test": "echo \"no tests yet, just trust me\" && exit 0",
+    "prepublish": "npm run build"
   },
   "author": "",
   "license": "MIT",
