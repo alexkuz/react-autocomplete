@@ -4,7 +4,7 @@
   "description": "",
   "main": "lib/main.js",
   "scripts": {
-    "build": "babel src --out-dir lib && cp src/styles.css lib/styles.css",
+    "build": "babel src --out-dir lib --optional runtime && cp src/styles.css lib/styles.css",
     "test": "echo \"no tests yet, just trust me\" && exit 0",
     "prepublish": "npm run build"
   },
