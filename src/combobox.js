@@ -47,7 +47,9 @@ module.exports = React.createClass({
 
     appearance: React.PropTypes.oneOf(['rf', 'bootstrap', 'bootstrap-small', 'bootstrap-large']),
 
-    shrink: React.PropTypes.bool
+    shrink: React.PropTypes.bool,
+
+    label: React.PropTypes.any
   },
 
   getDefaultProps: function() {
@@ -72,7 +74,8 @@ module.exports = React.createClass({
         button: 'rf-combobox-button',
         caret: '',
         list: 'rf-combobox-list',
-        option: 'rf-combobox-option'
+        option: 'rf-combobox-option',
+        label: ''
       },
 
       bootstrap: {
@@ -83,7 +86,8 @@ module.exports = React.createClass({
         button: 'input-group-btn',
         caret: 'caret',
         list: 'dropdown-menu',
-        option: 'dropdown-option'
+        option: 'dropdown-option',
+        label: 'label-control'
       }
     };
 
@@ -439,6 +443,12 @@ module.exports = React.createClass({
             whiteSpace: 'nowrap',
             fontSize: '16px'
           }} />
+        }
+        {this.props.label &&
+          <span className={appearance.label}
+                style={Object.assign({}, this.props.labelStyle)}>
+            {this.props.label}
+          </span>
         }
         <input
           ref="input"
