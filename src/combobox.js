@@ -460,6 +460,7 @@ module.exports = React.createClass({
           onFocus={this.handleInputFocus}
           onKeyDown={this.handleKeydown}
           onKeyUp={this.handleInputKeyUp}
+          placeholder={this.props.placeholder}
           role="combobox"
           aria-activedescendant={this.state.menu.activedescendant}
           aria-autocomplete={this.props.autocomplete}
