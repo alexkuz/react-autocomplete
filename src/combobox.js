@@ -47,9 +47,7 @@ module.exports = React.createClass({
 
     appearance: React.PropTypes.oneOf(['rf', 'bootstrap', 'bootstrap-small', 'bootstrap-large']),
 
-    shrink: React.PropTypes.bool,
-
-    shrinkMinSize: React.PropTypes.number
+    shrink: React.PropTypes.bool
   },
 
   getDefaultProps: function() {
@@ -59,8 +57,7 @@ module.exports = React.createClass({
       onSelect: k,
       value: null,
       appearance: 'rf',
-      shrink: false,
-      shrinkMinSize: 100
+      shrink: false
     };
   },
 
@@ -122,7 +119,7 @@ module.exports = React.createClass({
         activedescendant: null,
         isEmpty: true
       },
-      shrinkWidth: this.props.shrinkMinSize || 100
+      shrinkWidth: 100
     };
   },
 
@@ -164,7 +161,7 @@ module.exports = React.createClass({
         // need an ID for WAI-ARIA
         props.id = child.props.id || 'rf-combobox-selected-'+(++guid);
         props.isSelected = true;
-        props.className = [appearance.option, appearance.selected].join(' ');
+        props.className = [child.props.className, appearance.option, appearance.selected].join(' ');
         activedescendant = child.props.id;
       }
       props.onBlur = this.handleOptionBlur;
@@ -219,6 +216,15 @@ module.exports = React.createClass({
       return;
     this.maybeSelectAutocompletedOption();
     this.hideList();
+    if (this.props.onBlur) {
+      this.props.onBlur();
+    }
+  },
+
+  handleInputFocus: function() {
+    if (this.props.onFocus) {
+      this.props.onFocus();
+    }
   },
 
   handleOptionBlur: function() {
@@ -425,13 +431,13 @@ module.exports = React.createClass({
 
     return (
       <div className={this.getClassName()}
-           style={wrapperStyle}>
+           style={Object.assign(wrapperStyle, this.props.wrapperStyle)}>
         {this.props.shrink &&
           <span ref='sizer' style={{
             position: 'absolute',
             visibility: 'hidden',
-            'white-space': 'nowrap',
-            'font-size': '16px'
+            whiteSpace: 'nowrap',
+            fontSize: '16px'
           }} />
         }
         <input
@@ -441,16 +447,19 @@ module.exports = React.createClass({
           value={this.state.inputValue}
           onChange={this.handleInputChange}
           onBlur={this.handleInputBlur}
+          onFocus={this.handleInputFocus}
           onKeyDown={this.handleKeydown}
           onKeyUp={this.handleInputKeyUp}
           role="combobox"
           aria-activedescendant={this.state.menu.activedescendant}
           aria-autocomplete={this.props.autocomplete}
           aria-owns={this.state.listId}
+          style={Object.assign({}, this.props.inputStyle)}
         />
         <div aria-hidden="true"
              className={appearance.button}
-             ref="button">
+             ref="button"
+             style={Object.assign({}, this.props.buttonStyle)}>
           <span className={appearance.caret}
                 onClick={this.handleButtonClick} />
         </div>
@@ -460,6 +469,7 @@ module.exports = React.createClass({
           className={appearance.list}
           aria-expanded={this.state.isOpen+''}
           role="listbox"
+          style={Object.assign({}, this.props.listStyle)}
         >{this.state.menu.children}</ul>
       </div>
     );
@@ -476,7 +486,7 @@ module.exports = React.createClass({
 
     sizer.innerText = input.value;
     this.setState({
-      shrinkWidth: Math.max(sizer.offsetWidth + button.offsetWidth, this.props.shrinkMinSize)
+      shrinkWidth: sizer.offsetWidth + button.offsetWidth
     });
   }
 });
