@@ -87,7 +87,7 @@ module.exports = React.createClass({
         caret: 'caret',
         list: 'dropdown-menu',
         option: 'dropdown-option',
-        label: 'label-control'
+        label: 'control-label'
       }
     };
 
