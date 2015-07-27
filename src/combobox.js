@@ -445,10 +445,10 @@ module.exports = React.createClass({
           }} />
         }
         {this.props.label &&
-          <span className={appearance.label}
+          <label className={appearance.label}
                 style={Object.assign({}, this.props.labelStyle)}>
             {this.props.label}
-          </span>
+          </label>
         }
         <input
           ref="input"
