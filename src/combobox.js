@@ -251,6 +251,17 @@ module.exports = React.createClass({
     this.autocompleteInputValue();
   },
 
+  getFirstChild: function() {
+    var children = this.props.children;
+    for (var i = 0; i < children.length; i++) {
+      if (!children[i].props.disabled) {
+        return children[i];
+      }
+    };
+
+    return children;
+  },
+
   /**
    * Autocompletes the input value with a matching label of the first
    * ComboboxOption in the list and selects only the fragment that has
@@ -263,9 +274,7 @@ module.exports = React.createClass({
     ) return;
     var input = React.findDOMNode(this.refs.input);
     var inputValue = input.value;
-    var firstChild = this.props.children.length ?
-      this.props.children[0] :
-      this.props.children;
+    var firstChild = this.getFirstChild();
     var label = getLabel(firstChild);
     var fragment = matchFragment(inputValue, label);
     if (!fragment)
@@ -358,6 +367,9 @@ module.exports = React.createClass({
 
   selectOption: function(child, options) {
     options = options || {};
+    if (child.props.disabled) {
+      return;
+    }
     this.setState({
       value: child.props.value,
       inputValue: getLabel(child),
@@ -504,7 +516,9 @@ module.exports = React.createClass({
 
 function getLabel(component) {
   var hasLabel = component.props.label != null;
-  return hasLabel ? component.props.label : component.props.children;
+  return hasLabel ?
+    component.props.label :
+    (typeof component.props.children === 'string' ? component.props.children : '');
 }
 
 function matchFragment(userInput, firstChildLabel) {
