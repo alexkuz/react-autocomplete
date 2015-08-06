@@ -196,6 +196,7 @@ module.exports = React.createClass({
    * to do with an existing or potential selection.
   */
   clearSelectedState: function(cb) {
+    this.updateWidth();
     this.setState({
       focusedIndex: null,
       inputValue: null,
@@ -509,7 +510,7 @@ module.exports = React.createClass({
 
     sizer.innerText = input.value;
     this.setState({
-      shrinkWidth: sizer.offsetWidth + button.offsetWidth
+      shrinkWidth: sizer.offsetWidth + button.offsetWidth + 2
     });
   }
 });
