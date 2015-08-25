@@ -3,6 +3,8 @@ var guid = 0;
 var k = function(){};
 var ComboboxOption = require('./option');
 
+var sizerContainerEl = null;
+
 module.exports = React.createClass({
   displayName: 'Combobox',
 
@@ -128,7 +130,26 @@ module.exports = React.createClass({
   },
 
   componentWillMount: function() {
+    if (!sizerContainerEl) {
+      sizerContainerEl = document.createElement('div');
+      document.body.appendChild(sizerContainerEl);
+    }
+    
+    this.sizerEl = document.createElement('span');
+    this.sizerEl.style.position = 'absolute';
+    this.sizerEl.style.visibility = 'hidden';
+    this.sizerEl.style.whiteSpace = 'nowrap';
+    this.sizerEl.style.fontSize = '16px';
+    sizerContainerEl.appendChild(this.sizerEl);
+
     this.setState({menu: this.makeMenu()});
+  },
+
+  componentWillUnmount: function() {
+    sizerContainerEl.removeChild(this.sizerEl);
+    this.sizerEl = null;
+
+    clearTimeout(this.blurTimer);
   },
 
   componentDidMount: function() {
@@ -161,18 +182,20 @@ module.exports = React.createClass({
     var clonedChildren = React.Children.map(children, function(child, index) {
       isEmpty = false;
       var props = {};
-      if (this.state.value === child.props.value) {
-        // need an ID for WAI-ARIA
-        props.id = child.props.id || 'rf-combobox-selected-'+(++guid);
-        props.isSelected = true;
-        props.className = [child.props.className, appearance.option, appearance.selected].join(' ');
-        activedescendant = child.props.id;
+      if (!child.props.disabled) {
+        if (this.state.value === child.props.value) {
+          // need an ID for WAI-ARIA
+          props.id = child.props.id || 'rf-combobox-selected-'+(++guid);
+          props.isSelected = true;
+          props.className = [child.props.className, appearance.option, appearance.selected].join(' ');
+          activedescendant = child.props.id;
+        }
+        props.onBlur = this.handleOptionBlur;
+        props.onClick = this.selectOption.bind(this, child);
+        props.onFocus = this.handleOptionFocus;
+        props.onKeyDown = this.handleOptionKeyDown.bind(this, child);
+        props.onMouseEnter = this.handleOptionMouseEnter.bind(this, index);
       }
-      props.onBlur = this.handleOptionBlur;
-      props.onClick = this.selectOption.bind(this, child);
-      props.onFocus = this.handleOptionFocus;
-      props.onKeyDown = this.handleOptionKeyDown.bind(this, child);
-      props.onMouseEnter = this.handleOptionMouseEnter.bind(this, index);
       return React.cloneElement(child, props);
     }.bind(this));
     return {
@@ -449,14 +472,6 @@ module.exports = React.createClass({
     return (
       <div className={this.getClassName()}
            style={Object.assign(wrapperStyle, this.props.wrapperStyle)}>
-        {this.props.shrink &&
-          <span ref='sizer' style={{
-            position: 'absolute',
-            visibility: 'hidden',
-            whiteSpace: 'nowrap',
-            fontSize: '16px'
-          }} />
-        }
         {this.props.label &&
           <label className={appearance.label}
                 style={Object.assign({}, this.props.labelStyle)}>
@@ -465,6 +480,7 @@ module.exports = React.createClass({
         }
         <input
           ref="input"
+          type="text"
           className={appearance.input}
           defaultValue={this.props.value}
           value={this.state.inputValue}
@@ -504,14 +520,14 @@ module.exports = React.createClass({
       return;
     }
 
-    var sizer = React.findDOMNode(this.refs.sizer);
     var input = React.findDOMNode(this.refs.input);
     var button = React.findDOMNode(this.refs.button);
 
-    sizer.innerText = input.value;
-    this.setState({
-      shrinkWidth: sizer.offsetWidth + button.offsetWidth + 2
-    });
+    this.sizerEl.innerText = input.value;
+    setTimeout(() =>
+      this.setState({
+        shrinkWidth: this.sizerEl.offsetWidth + button.offsetWidth + 2
+      }), 0);
   }
 });
 
