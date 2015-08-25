@@ -6,7 +6,9 @@
   "scripts": {
     "build": "./node_modules/.bin/babel src --out-dir lib --optional runtime && cp src/styles.css lib/styles.css",
     "test": "echo \"no tests yet, just trust me\" && exit 0",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "version": "npm run build && git add -A .",
+    "postversion": "git push"
   },
   "author": "",
   "license": "MIT",
