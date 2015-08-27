@@ -1,4 +1,5 @@
 var React = require('react');
+var ReactDom = require('react-dom');
 var guid = 0;
 var k = function(){};
 var ComboboxOption = require('./option');
@@ -230,7 +231,7 @@ module.exports = React.createClass({
   },
 
   handleInputChange: function(event) {
-    var value = React.findDOMNode(this.refs.input).value;
+    var value = ReactDom.findDOMNode(this.refs.input).value;
     this.clearSelectedState(function() {
       this.props.onInput(value);
       if (!this.state.isOpen)
@@ -296,7 +297,7 @@ module.exports = React.createClass({
       this.props.autocomplete == false ||
       this.props.children.length === 0
     ) return;
-    var input = React.findDOMNode(this.refs.input);
+    var input = ReactDom.findDOMNode(this.refs.input);
     var inputValue = input.value;
     var firstChild = this.getFirstChild();
     var label = getLabel(firstChild);
@@ -328,11 +329,11 @@ module.exports = React.createClass({
   },
 
   focusInput: function() {
-    React.findDOMNode(this.refs.input).focus();
+    ReactDom.findDOMNode(this.refs.input).focus();
   },
 
   selectInput: function() {
-    React.findDOMNode(this.refs.input).select();
+    ReactDom.findDOMNode(this.refs.input).select();
   },
 
   inputKeydownMap: {
@@ -380,7 +381,7 @@ module.exports = React.createClass({
 
   selectOnEnter: function() {
     this.maybeSelectAutocompletedOption();
-    React.findDOMNode(this.refs.input).select();
+    ReactDom.findDOMNode(this.refs.input).select();
   },
 
   maybeSelectAutocompletedOption: function() {
@@ -460,7 +461,7 @@ module.exports = React.createClass({
 
   focusOption: function() {
     var index = this.state.focusedIndex;
-    React.findDOMNode(this.refs.list).childNodes[index].focus();
+    ReactDom.findDOMNode(this.refs.list).childNodes[index].focus();
   },
 
   render: function() {
@@ -520,14 +521,16 @@ module.exports = React.createClass({
       return;
     }
 
-    var input = React.findDOMNode(this.refs.input);
-    var button = React.findDOMNode(this.refs.button);
+    var input = ReactDom.findDOMNode(this.refs.input);
+    var button = ReactDom.findDOMNode(this.refs.button);
 
     this.sizerEl.innerText = input.value;
-    setTimeout(() =>
+    setTimeout(() => {
+      if (!this.sizerEl) return;
       this.setState({
         shrinkWidth: this.sizerEl.offsetWidth + button.offsetWidth + 2
-      }), 0);
+      })
+    }, 0);
   }
 });
 
