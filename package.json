@@ -1,6 +1,6 @@
 {
   "name": "@alexkuz/react-autocomplete",
-  "version": "0.2.0-beta",
+  "version": "0.2.0",
   "description": "",
   "main": "lib/main.js",
   "scripts": {
@@ -14,7 +14,7 @@
   "license": "MIT",
   "peerDependencies": {
     "react": ">=0.13.1 || ^0.14.0-alpha",
-    "react-dom":  ">=0.13.1 || ^0.14.0-alpha"
+    "react-dom": ">=0.13.1 || ^0.14.0-alpha"
   },
   "devDependencies": {
     "babel": "^5.8.21"
