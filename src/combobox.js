@@ -525,12 +525,9 @@ module.exports = React.createClass({
     var button = ReactDom.findDOMNode(this.refs.button);
 
     this.sizerEl.innerText = input.value;
-    setTimeout(() => {
-      if (!this.sizerEl) return;
-      this.setState({
-        shrinkWidth: this.sizerEl.offsetWidth + button.offsetWidth + 2
-      })
-    }, 0);
+    this.setState({
+      shrinkWidth: this.sizerEl.offsetWidth + button.offsetWidth + 2
+    });
   }
 });
 
