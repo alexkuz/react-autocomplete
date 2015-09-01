@@ -67,7 +67,7 @@ module.exports = React.createClass({
   },
 
 
-  getAppearance() {
+  getAppearance: function() {
     var appearances = {
       rf: {
         combobox: 'rf-combobox',
@@ -320,7 +320,7 @@ module.exports = React.createClass({
   },
 
   hideList: function() {
-    this.setState({isOpen: false});
+    this.setState({isOpen: false, focusedIndex: null});
   },
 
   hideOnEscape: function() {
@@ -466,13 +466,13 @@ module.exports = React.createClass({
 
   render: function() {
     var appearance = this.getAppearance();
-    var wrapperStyle = this.props.shrink ?
+    var shrinkStyle = this.props.shrink ?
       { width: this.state.shrinkWidth + 'px' } :
       { };
 
     return (
       <div className={this.getClassName()}
-           style={Object.assign(wrapperStyle, this.props.wrapperStyle)}>
+           style={this.props.wrapperStyle}>
         {this.props.label &&
           <label className={appearance.label}
                 style={Object.assign({}, this.props.labelStyle)}>
@@ -495,14 +495,14 @@ module.exports = React.createClass({
           aria-activedescendant={this.state.menu.activedescendant}
           aria-autocomplete={this.props.autocomplete}
           aria-owns={this.state.listId}
-          style={Object.assign({}, this.props.inputStyle)}
+          style={Object.assign({}, shrinkStyle, this.props.inputStyle)}
         />
         <div aria-hidden="true"
              className={appearance.button}
              ref="button"
-             style={Object.assign({}, this.props.buttonStyle)}>
-          <span className={appearance.caret}
-                onClick={this.handleButtonClick} />
+             style={Object.assign({}, this.props.buttonStyle)}
+             onClick={this.handleButtonClick}>
+          <span className={appearance.caret} />
         </div>
         <ul
           id={this.state.listId}
@@ -526,7 +526,7 @@ module.exports = React.createClass({
 
     this.sizerEl.innerText = input.value;
     this.setState({
-      shrinkWidth: this.sizerEl.offsetWidth + button.offsetWidth + 2
+      shrinkWidth: this.sizerEl.offsetWidth + 2
     });
   }
 });
